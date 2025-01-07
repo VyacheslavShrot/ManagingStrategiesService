@@ -1,0 +1,2 @@
+# ManagingStrategiesService
+README
