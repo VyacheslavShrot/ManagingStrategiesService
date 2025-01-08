@@ -1,18 +1,25 @@
 from flask import Flask
 
-from config.database import init_app
-
 
 def create_app(
 ) -> Flask:
     """
     Create Flask APP
     """
-    app: Flask = Flask(__name__)
+    from config.logger import logger
+    from config.database import init_db
 
-    # Init APP -> Database
-    init_app(
-        app=app
-    )
+    try:
+        app: Flask = Flask(__name__)
+    except Exception as e:
+        logger.error(f"An Unexpected Error occurred while create Flask App | {e}")
+    else:
+        try:
+            # Init DB
+            init_db(
+                app=app
+            )
+        except Exception as e:
+            logger.error(f"An Unexpected Error occurred while Init Database | {e}")
 
-    return app
+        return app
