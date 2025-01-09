@@ -1,4 +1,5 @@
-from flask import Blueprint, jsonify, request, g
+from flask import Blueprint, jsonify, request, g, current_app
+from flask_caching import Cache
 from flask_jwt_extended import jwt_required
 
 from backend.management.models import Strategy
@@ -111,6 +112,14 @@ class StrategyApis:
             db.session.add(strategy)
             db.session.commit()
 
+            # Global Variable
+            cache: Cache = current_app.cache
+
+            # Delete Cached Strategies
+            cache.delete(
+                f"strategies_{user.id}"
+            )
+
             logger.info(f"----\nSuccessful Create Strategy")
             return jsonify(
                 {
@@ -222,22 +231,38 @@ class StrategyApis:
                     }
                 ), 200
             else:
-                # Get ALL User Strategies
-                strategies: list[Strategy] = Strategy.query.filter_by(user_id=user.id).all()
+                # Global Variable
+                cache: Cache = current_app.cache
 
-                # Format Response
-                strategy_list: list = [
-                    {
-                        "id": strategy.id,
-                        "name": strategy.name,
-                        "description": strategy.description,
-                        "asset_type": strategy.asset_type,
-                        "buy_conditions": strategy.buy_conditions,
-                        "sell_conditions": strategy.sell_conditions,
-                        "status": strategy.status,
-                    }
-                    for strategy in strategies
-                ]
+                # Get Cached Strategies
+                cached_strategies: list | None = cache.get(
+                    f"strategies_{user.id}"
+                )
+
+                if not cached_strategies:
+                    # Get ALL User Strategies
+                    strategies: list[Strategy] = Strategy.query.filter_by(user_id=user.id).all()
+
+                    # Format Response
+                    strategy_list: list = [
+                        {
+                            "id": strategy.id,
+                            "name": strategy.name,
+                            "description": strategy.description,
+                            "asset_type": strategy.asset_type,
+                            "buy_conditions": strategy.buy_conditions,
+                            "sell_conditions": strategy.sell_conditions,
+                            "status": strategy.status,
+                        }
+                        for strategy in strategies
+                    ]
+
+                    # Save to Cache Strategies
+                    cache.set(
+                        f"strategies_{user.id}",
+                        strategy_list,
+                        timeout=300
+                    )
 
                 logger.info(f"----\nSuccessful Get ALL User Strategies")
                 return jsonify(
@@ -247,7 +272,7 @@ class StrategyApis:
                             "id": user.id,
                             "username": user.username
                         },
-                        "strategies": strategy_list,
+                        "strategies": cached_strategies if cached_strategies else strategy_list
                     }
                 ), 200
         except Exception as e:
@@ -390,6 +415,14 @@ class StrategyApis:
             # Save Changes
             db.session.commit()
 
+            # Global Variable
+            cache: Cache = current_app.cache
+
+            # Delete Cached Strategies
+            cache.delete(
+                f"strategies_{user.id}"
+            )
+
             # Get Strategy Data
             buy_conditions: dict = strategy.buy_conditions
             sell_conditions: dict = strategy.sell_conditions
@@ -473,6 +506,14 @@ class StrategyApis:
             # Delete Strategy
             db.session.delete(strategy)
             db.session.commit()
+
+            # Global Variable
+            cache: Cache = current_app.cache
+
+            # Delete Cached Strategies
+            cache.delete(
+                f"strategies_{user.id}"
+            )
 
             logger.info(f"----\nSuccessful Deleted Strategy")
             return jsonify(

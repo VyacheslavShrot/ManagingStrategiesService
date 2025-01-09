@@ -1,5 +1,6 @@
 from environs import Env
 from flask import Flask
+from flask_caching import Cache
 from flask_jwt_extended import JWTManager
 
 
@@ -24,6 +25,14 @@ def create_app(
         # Configure JWT
         app.config["JWT_SECRET_KEY"] = env("JWT_SECRET_KEY")
         JWTManager(app)
+
+        # Configure Redis Cache
+        app.config['CACHE_TYPE'] = 'RedisCache'
+        app.config['CACHE_REDIS_URL'] = 'redis://redis:6379/0'
+        cache: Cache = Cache(app)
+
+        # Set Cache Variable as Global Variable
+        app.cache = cache
 
         """
         Register APIs

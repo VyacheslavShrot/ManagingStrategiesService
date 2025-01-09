@@ -22,6 +22,11 @@ docker exec -it postgres bash
 psql -U $POSTGRES_USER -h postgres -c 'CREATE DATABASE default_name;'
 ```
 
+- Run Redis for Cache System
+```
+docker-compose up -d redis
+```
+
 ### START
 
 - Run Application -> WSGI

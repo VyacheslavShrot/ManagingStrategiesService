@@ -12,6 +12,9 @@ __pycache__/
 # Database Data
 postgres_data
 
+# Redis Data
+redis_data
+
 # Migrations
 /migrations/versions/*
 !/migrations/versions/.gitkeep
