@@ -11,6 +11,9 @@ POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin
 
 JWT_SECRET_KEY=str
+
+RABBITMQ_DEFAULT_USER=admin
+RABBITMQ_DEFAULT_PASS=admin
 ```
 
 - Run Database and Create Database Name
@@ -25,6 +28,11 @@ psql -U $POSTGRES_USER -h postgres -c 'CREATE DATABASE default_name;'
 - Run Redis for Cache System
 ```
 docker-compose up -d redis
+```
+
+- Run RabbitMQ
+```
+docker-compose up -d rabbitmq
 ```
 
 ### START

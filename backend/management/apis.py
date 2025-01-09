@@ -3,6 +3,7 @@ from flask_caching import Cache
 from flask_jwt_extended import jwt_required
 
 from backend.management.models import Strategy
+from backend.messages import publish_create_strategy_message, publish_update_strategy_message
 from backend.user.models import User
 from config.database import db
 from config.logger import logger
@@ -118,6 +119,12 @@ class StrategyApis:
             # Delete Cached Strategies
             cache.delete(
                 f"strategies_{user.id}"
+            )
+
+            # Send Message into Channel
+            publish_create_strategy_message(
+                strategy_name=strategy.name,
+                user_id=user.id
             )
 
             logger.info(f"----\nSuccessful Create Strategy")
@@ -421,6 +428,12 @@ class StrategyApis:
             # Delete Cached Strategies
             cache.delete(
                 f"strategies_{user.id}"
+            )
+
+            # Send Message into Channel
+            publish_update_strategy_message(
+                strategy_name=strategy.name,
+                user_id=user.id
             )
 
             # Get Strategy Data
