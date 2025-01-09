@@ -6,6 +6,19 @@ __pycache__/
 # C extensions
 *.so
 
+# Idea
+.idea
+
+# Database Data
+postgres_data
+
+# Redis Data
+redis_data
+
+# Migrations
+/migrations/versions/*
+!/migrations/versions/.gitkeep
+
 # Distribution / packaging
 .Python
 build/
