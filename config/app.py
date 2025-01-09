@@ -11,6 +11,7 @@ def create_app(
     from config.logger import logger
     from config.database import init_db
     from backend.user.apis import user_bp
+    from backend.management.apis import strategy_bp
 
     # Read ENV File
     env = Env()
@@ -27,6 +28,15 @@ def create_app(
         Register APIs
         """
         app.register_blueprint(user_bp)
+        app.register_blueprint(strategy_bp)
+
+        """
+        Register Middlewares
+        """
+        from backend.middlewares import (
+            load_user
+        )
+        app.before_request(load_user)
 
     except Exception as e:
         logger.error(f"An Unexpected Error occurred while create Flask App | {e}")
@@ -41,6 +51,7 @@ def create_app(
             Register Models
             """
             from backend.user.models import User
+            from backend.management.models import Strategy
 
         except Exception as e:
             logger.error(f"An Unexpected Error occurred while Init Database | {e}")
