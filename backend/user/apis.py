@@ -127,6 +127,6 @@ class UserApis:
                     },
                     "token": token
                 }
-            ), 201
+            ), 200
         except Exception as e:
             logger.error(f"An Unexpected Error occurred while Login User | {e}")
