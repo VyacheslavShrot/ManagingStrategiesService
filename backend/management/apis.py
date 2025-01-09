@@ -146,9 +146,13 @@ class StrategyApis:
             "GET"
         ]
     )
+    @strategy_bp.route(
+        "/strategy",
+        methods=["GET"]
+    )
     @jwt_required()
     def get_strategy(
-            strategy_id: int
+            strategy_id: int = None
     ) -> jsonify:
         """
         Get Strategy by Strategy Id
@@ -166,56 +170,86 @@ class StrategyApis:
                     }
                 ), 401
 
-            # Get Strategy
-            strategy: Strategy = Strategy.query.get(strategy_id)
-            if not strategy:
+            if strategy_id:
+                # Get Strategy
+                strategy: Strategy = Strategy.query.get(strategy_id)
+                if not strategy:
+                    return jsonify(
+                        {
+                            "error": "No Such Strategy"
+                        }
+                    ), 404
+
+                if strategy.user_id != user.id:
+                    return jsonify(
+                        {
+                            "error": "Such Strategy is NOT Your Strategy"
+                        }
+                    ), 404
+
+                # Get Strategy Data
+                buy_conditions: dict = strategy.buy_conditions
+                sell_conditions: dict = strategy.sell_conditions
+
+                indicator_buy: str = buy_conditions.get("indicator")
+                threshold_buy: float = buy_conditions.get("threshold")
+                indicator_sell: str = sell_conditions.get("indicator")
+                threshold_sell: float = sell_conditions.get("threshold")
+
+                logger.info(f"----\nSuccessful Get ONE Strategy")
                 return jsonify(
                     {
-                        "error": "No Such Strategy"
+                        "success": True,
+                        "strategy": {
+                            "user": {
+                                "id": user.id,
+                                "username": user.username
+                            },
+                            "id": strategy.id,
+                            "name": strategy.name,
+                            "description": strategy.description,
+                            "asset_type": strategy.asset_type,
+                            "buy_conditions": {
+                                "indicator": indicator_buy,
+                                "threshold": threshold_buy
+                            },
+                            "sell_condition": {
+                                "indicator": indicator_sell,
+                                "threshold": threshold_sell
+                            },
+                            "status": strategy.status
+                        }
                     }
-                ), 404
+                ), 200
+            else:
+                # Get ALL User Strategies
+                strategies: list[Strategy] = Strategy.query.filter_by(user_id=user.id).all()
 
-            if strategy.user_id != user.id:
-                return jsonify(
+                # Format Response
+                strategy_list: list = [
                     {
-                        "error": "Such Strategy is NOT Your Strategy"
-                    }
-                ), 404
-
-            # Get Strategy Data
-            buy_conditions: dict = strategy.buy_conditions
-            sell_conditions: dict = strategy.sell_conditions
-
-            indicator_buy: str = buy_conditions.get("indicator")
-            threshold_buy: float = buy_conditions.get("threshold")
-            indicator_sell: str = sell_conditions.get("indicator")
-            threshold_sell: float = sell_conditions.get("threshold")
-
-            logger.info(f"----\nSuccessful Get Strategy")
-            return jsonify(
-                {
-                    "success": True,
-                    "strategy": {
-                        "user": {
-                            "id": user.id,
-                            "username": user.username
-                        },
                         "id": strategy.id,
                         "name": strategy.name,
                         "description": strategy.description,
                         "asset_type": strategy.asset_type,
-                        "buy_conditions": {
-                            "indicator": indicator_buy,
-                            "threshold": threshold_buy
-                        },
-                        "sell_condition": {
-                            "indicator": indicator_sell,
-                            "threshold": threshold_sell
-                        },
-                        "status": strategy.status
+                        "buy_conditions": strategy.buy_conditions,
+                        "sell_conditions": strategy.sell_conditions,
+                        "status": strategy.status,
                     }
-                }
-            ), 200
+                    for strategy in strategies
+                ]
+
+                logger.info(f"----\nSuccessful Get ALL User Strategies")
+                return jsonify(
+                    {
+                        "success": True,
+                        "user": {
+                            "id": user.id,
+                            "username": user.username
+                        },
+                        "strategies": strategy_list,
+                    }
+                ), 200
         except Exception as e:
             logger.error(f"An Unexpected Error occurred while Get Strategy | {e}")
 
