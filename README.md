@@ -1,3 +1,7 @@
+### DOCs
+
+https://documenter.getpostman.com/view/26500283/2sAYQUquPR - Postman
+
 ### INSTALLATION
 
 - Clone This Repository
