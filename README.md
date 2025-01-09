@@ -9,6 +9,8 @@ git clone https://github.com/VyacheslavShrot/ManagingStrategiesService.git
 ```
 POSTGRES_USER=admin
 POSTGRES_PASSWORD=admin
+
+JWT_SECRET_KEY=str
 ```
 
 - Run Database and Create Database Name
