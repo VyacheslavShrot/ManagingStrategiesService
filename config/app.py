@@ -12,6 +12,7 @@ def create_app(
     from config.database import init_db
     from backend.user.apis import user_bp
     from backend.management.apis import strategy_bp
+    from backend.simulation.apis import simulate_bp
 
     # Read ENV File
     env = Env()
@@ -29,6 +30,7 @@ def create_app(
         """
         app.register_blueprint(user_bp)
         app.register_blueprint(strategy_bp)
+        app.register_blueprint(simulate_bp)
 
         """
         Register Middlewares
