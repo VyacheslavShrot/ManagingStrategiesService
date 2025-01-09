@@ -57,7 +57,7 @@ class UserApis:
 
             # Create JWT Token
             token: str = create_access_token(
-                identity=new_user.id
+                identity=str(new_user.id)
             )
 
             logger.info(f"----\nSuccessful Register User")
@@ -113,7 +113,7 @@ class UserApis:
 
             # Create JWT Token
             token: str = create_access_token(
-                identity=user.id
+                identity=str(user.id)
             )
 
             logger.info(f"----\nSuccessful Login User")
