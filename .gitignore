@@ -15,10 +15,6 @@ postgres_data
 # Redis Data
 redis_data
 
-# Migrations
-/migrations/versions/*
-!/migrations/versions/.gitkeep
-
 # Distribution / packaging
 .Python
 build/
