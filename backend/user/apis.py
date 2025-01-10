@@ -1,8 +1,9 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import create_access_token
 
+from backend.request import APIRequest
+from backend.user.auth import Auth
 from backend.user.models import User
-from config.database import db
 from config.logger import logger
 
 user_bp: Blueprint = Blueprint('user', __name__)
@@ -25,12 +26,20 @@ class UserApis:
 
         logger.info(f"----\nStart Register API")
 
+        # Global Variables
+        api_request: APIRequest = APIRequest()
+        auth: Auth = Auth()
+
         try:
             # Get Data
             data: dict = request.get_json()
 
-            username: str = data.get("username", None)
-            password: str = data.get("password", None)
+            username, password = api_request.get_data(
+                data=data,
+                params=[
+                    "username", "password"
+                ]
+            )
             if not username or not password:
                 return jsonify(
                     {
@@ -48,12 +57,10 @@ class UserApis:
                 ), 400
 
             # Create New User
-            new_user: User = User(username=username)
-            new_user.set_password(password)
-
-            # Save User
-            db.session.add(new_user)
-            db.session.commit()
+            new_user: User = auth.create_user(
+                username=username,
+                password=password
+            )
 
             # Create JWT Token
             token: str = create_access_token(
@@ -61,16 +68,11 @@ class UserApis:
             )
 
             logger.info(f"----\nSuccessful Register User")
-
             return jsonify(
-                {
-                    "success": True,
-                    "user": {
-                        "id": new_user.id,
-                        "username": new_user.username
-                    },
-                    "token": token
-                }
+                api_request.user_response(
+                    user=new_user,
+                    token=token
+                )
             ), 201
         except Exception as e:
             logger.error(f"An Unexpected Error occurred while Register User | {e}")
@@ -90,12 +92,19 @@ class UserApis:
 
         logger.info(f"----\nStart Login API")
 
+        # Global Variables
+        api_request: APIRequest = APIRequest()
+
         try:
             # Get Data
             data: dict = request.get_json()
 
-            username: str = data.get("username", None)
-            password: str = data.get("password", None)
+            username, password = api_request.get_data(
+                data=data,
+                params=[
+                    "username", "password"
+                ]
+            )
             if not username or not password:
                 return jsonify(
                     {
@@ -119,14 +128,10 @@ class UserApis:
             logger.info(f"----\nSuccessful Login User")
 
             return jsonify(
-                {
-                    "success": True,
-                    "user": {
-                        "id": user.id,
-                        "username": user.username
-                    },
-                    "token": token
-                }
+                api_request.user_response(
+                    user=user,
+                    token=token
+                )
             ), 200
         except Exception as e:
             logger.error(f"An Unexpected Error occurred while Login User | {e}")
